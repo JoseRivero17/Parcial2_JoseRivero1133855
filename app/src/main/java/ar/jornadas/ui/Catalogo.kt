@@ -14,21 +14,25 @@ import ar.jornadas.data.Charla
 @Composable
 fun Catalogo(model: ProgramaModel, abrir: (String) -> Unit) {
     LaunchedEffect(Unit) { model.recargar() }
-    val dia by model.dia.collectAsStateWithLifecycle()
-    var tema by remember { mutableStateOf("Todos") }
-    val fichas by model.charlas.collectAsStateWithLifecycle()
-    val aviso by model.aviso.collectAsStateWithLifecycle()
-    val cargando by model.cargando.collectAsStateWithLifecycle()
-    Selector(listOf("Ambos días", "Día 1", "Día 2"), dia) { model.dia.value = it }
-    val temas = listOf("Todos", "Android", "Datos", "Calidad")
-    Selector(temas, temas.indexOf(tema)) { tema = temas[it] }
+    val estado by model.uiState.collectAsStateWithLifecycle()
+    Selector(listOf("Ambos días", "Día 1", "Día 2"), estado.dia, model::elegirDia)
+    val temas = listOf(TODOS_LOS_TEMAS, "Android", "Datos", "Calidad")
+    Selector(temas, temas.indexOf(estado.tema)) { model.elegirTema(temas[it]) }
     TextButton(onClick = model::recargar) { Text("Actualizar") }
-    if (cargando) LinearProgressIndicator(Modifier.fillMaxWidth())
-    if (aviso.isNotEmpty()) {
-        Text(aviso)
+    if (estado.cargando) LinearProgressIndicator(Modifier.fillMaxWidth())
+    if (estado.usandoGuardados) {
+        Text("Sin conexión: se están usando los datos guardados.")
         OutlinedButton(onClick = model::recargar) { Text("Reintentar") }
-    } else {
-        Grilla(fichas.filter { (dia == 0 || it.dia == dia) && (tema == "Todos" || it.tema == tema) }, abrir)
+    }
+    when (val contenido = estado.contenido) {
+        Contenido.Cargando -> Text("Cargando programa…")
+        Contenido.SinDescarga -> {
+            Text("Todavía no se descargó el programa")
+            OutlinedButton(onClick = model::recargar) { Text("Reintentar") }
+        }
+        Contenido.SinCharlas -> Text("Sin charlas programadas")
+        Contenido.SinCoincidencias -> Text("Ninguna charla coincide con los filtros.")
+        is Contenido.Lista -> Grilla(contenido.charlas, abrir)
     }
 }
 
