@@ -7,8 +7,11 @@ class AgendaRepository(private val api: ProgramaApi, private val dao: CarteleraD
         val fichas = api.consultar().map {
             DatosServidor(it.id, it.title, it.track, it.day, it.time, it.room, it.speaker, it.summary)
         }
-        dao.aplicarEdicion(fichas)
+        dao.aplicarEdicion(fichas, descargadaEn = System.currentTimeMillis())
     }
+
+    /** true si alguna vez se aplicó una edición exitosa (aunque haya sido vacía). */
+    val hayEdicion = dao.hayEdicion()
 
     suspend fun cambiarFavorita(id: String) = dao.alternar(id)
 }
