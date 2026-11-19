@@ -13,7 +13,6 @@ import ar.jornadas.data.Charla
 
 @Composable
 fun Catalogo(model: ProgramaModel, abrir: (String) -> Unit) {
-    LaunchedEffect(Unit) { model.recargar() }
     val estado by model.uiState.collectAsStateWithLifecycle()
     Selector(listOf("Ambos días", "Día 1", "Día 2"), estado.dia, model::elegirDia)
     val temas = listOf(TODOS_LOS_TEMAS, "Android", "Datos", "Calidad")

@@ -11,14 +11,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null && intent.hasExtra("servicio_disponible")) {
-            model.mesa.disponible = intent.getBooleanExtra("servicio_disponible", true)
+            // Antes de la primera petición: el interceptor captura la disponibilidad al comenzar.
+            Servicios.de(this).mesa.disponible = intent.getBooleanExtra("servicio_disponible", true)
             intent.removeExtra("servicio_disponible")
         }
+        model.cargaAutomatica()
         setContent { Portada(model) }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        model.recargar()
     }
 }
